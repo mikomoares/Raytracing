@@ -1,22 +1,9 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
-//==============================================================================================
-// Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
-//
-// To the extent possible under law, the author(s) have dedicated all copyright and related and
-// neighboring rights to this software to the public domain worldwide. This software is
-// distributed without any warranty.
-//
-// You should have received a copy (see file COPYING.txt) of the CC0 Public Domain Dedication
-// along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-//==============================================================================================
 
 #include "rtweekend.h"
-#include "texture.h"
-
 
 struct hit_record;
-
 
 class material {
     public:
@@ -25,11 +12,9 @@ class material {
         ) const = 0;
 };
 
-
 class lambertian : public material {
     public:
-        lambertian(const color& a) : albedo(make_shared<solid_color>(a)) {}
-        lambertian(shared_ptr<texture> a) : albedo(a) {}
+        lambertian(const color& a) : albedo(a) {}
 
         virtual bool scatter(
             const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
@@ -41,14 +26,13 @@ class lambertian : public material {
                 scatter_direction = rec.normal;
 
             scattered = ray(rec.p, scatter_direction);
-            attenuation = albedo->value(rec.u, rec.v, rec.p);
+            attenuation = albedo;
             return true;
         }
 
     public:
-        shared_ptr<texture> albedo;
+        color albedo;
 };
-
 
 class metal : public material {
     public:
@@ -85,7 +69,6 @@ class dielectric : public material {
 
             bool cannot_refract = refraction_ratio * sin_theta > 1.0;
             vec3 direction;
-
             if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
                 direction = reflect(unit_direction, rec.normal);
             else
@@ -106,6 +89,4 @@ class dielectric : public material {
             return r0 + (1-r0)*pow((1 - cosine),5);
         }
 };
-
-
 #endif
